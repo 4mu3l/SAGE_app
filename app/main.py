@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from database import Base, engine
+from app.database import Base, engine
 
-from src.routes.usuario_route import router as usuario_router
-from src.routes.consumo_route import router as consumo_router
-from src.routes.dicas_route import router as dicas_router
-from src.routes.metas_route import router as metas_router
+from app.src.routes.usuario_route import router as usuario_router
+from app.src.routes.consumo_route import router as consumo_router
+from app.src.routes.dicas_route import router as dicas_router
+from app.src.routes.metas_route import router as metas_router
 
 Base.metadata.create_all(bind=engine)
 
