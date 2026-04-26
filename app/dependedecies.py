@@ -5,7 +5,7 @@ from jose import jwt, JWTError
 from app.database import SessionLocal
 from app.src.models.usuario_model import Usuario
 
-from security import oauth2_schema, verificar_token_acesso
+from app.security import oauth2_schema, verificar_token_acesso
 
 def pegar_sessao():
     session = SessionLocal()

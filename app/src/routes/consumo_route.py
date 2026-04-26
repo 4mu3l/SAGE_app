@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.src.schemas.consumo_schema import Consumo, ConsumoUpdate
 from app.src.services.consumo_service import *
-from dependedecies import pegar_sessao, verificar_token
+from app.dependedecies import pegar_sessao, verificar_token
 
 from app.src.models.usuario_model import Usuario
 
