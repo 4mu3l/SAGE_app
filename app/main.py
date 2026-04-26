@@ -17,8 +17,3 @@ app.include_router(usuario_router)
 app.include_router(metas_router)
 app.include_router(consumo_router)
 app.include_router(dicas_router)
-
-
-@app.get("/")
-def home():
-    return {"mensagem": "Servidor SAGE Online!"}
