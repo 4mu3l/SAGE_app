@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from src.schemas.metas_schema import Meta, MetaUpdate
-from src.services.metas_service import *
-from dependedecies import pegar_sessao, verificar_token
-from src.models.usuario_model import Usuario
+from app.src.schemas.metas_schema import Meta, MetaUpdate
+from app.src.services.metas_service import *
+from app.dependedecies import pegar_sessao, verificar_token
+from app.src.models.usuario_model import Usuario
 
 router = APIRouter(prefix="/metas", tags=["Metas"])
 

@@ -3,11 +3,11 @@ import random
 import string
 from sqlalchemy.orm import Session
 from pydantic import EmailStr
-from src.models.usuario_model import Usuario
-from src.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate, UsuarioLogin, ResetSenhaRequest, EmailRequest
-from security import *
+from app.src.models.usuario_model import Usuario
+from app.src.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate, UsuarioLogin, ResetSenhaRequest, EmailRequest
+from app.security import *
 from fastapi import HTTPException
-from src.services.email_recup import enviar_email_recuperacao
+from app.src.services.email_recup import enviar_email_recuperacao
 
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):

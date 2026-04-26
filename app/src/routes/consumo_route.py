@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from src.schemas.consumo_schema import Consumo, ConsumoUpdate
-from src.services.consumo_service import *
+from app.src.schemas.consumo_schema import Consumo, ConsumoUpdate
+from app.src.services.consumo_service import *
 from dependedecies import pegar_sessao, verificar_token
 
-from src.models.usuario_model import Usuario
+from app.src.models.usuario_model import Usuario
 
 router = APIRouter(prefix="/consumo", tags=["Consumo"])
 

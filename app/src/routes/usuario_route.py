@@ -2,12 +2,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
-from src.models.usuario_model import Usuario as UsuarioModel
-from src.schemas.usuario_schema import *
-from src.services.usuario_service import *
-from src.services.email_recup import enviar_email_recuperacao
-from security import verificar_senha, criar_token_acesso
-from dependedecies import pegar_sessao, verificar_token
+from app.src.models.usuario_model import Usuario as UsuarioModel
+from app.src.schemas.usuario_schema import *
+from app.src.services.usuario_service import *
+from app.src.services.email_recup import enviar_email_recuperacao
+from app.security import verificar_senha, criar_token_acesso
+from app.dependedecies import pegar_sessao, verificar_token
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 

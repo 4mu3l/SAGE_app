@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from src.models.consumo_model import Consumos
-from src.schemas.consumo_schema import Consumo, ConsumoUpdate
-from src.models.usuario_model import Usuario
+from app.src.models.consumo_model import Consumos
+from app.src.schemas.consumo_schema import Consumo, ConsumoUpdate
+from app.src.models.usuario_model import Usuario
 
 def registrar_consumo(db: Session, novo_consumo: Consumo, current_user: Usuario):
     if not current_user.admin:

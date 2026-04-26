@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from src.models.metas_model import Meta as MetaModel
-from src.models.consumo_model import Consumos
-from src.schemas.metas_schema import Meta, MetaUpdate
-from src.models.usuario_model import Usuario
+from app.src.models.metas_model import Meta as MetaModel
+from app.src.models.consumo_model import Consumos
+from app.src.schemas.metas_schema import Meta, MetaUpdate
+from app.src.models.usuario_model import Usuario
 
 
 def definir_meta(db: Session, nova_meta: Meta, current_user: Usuario):
