@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.src.schemas.consumo_schema import Consumo, ConsumoUpdate
+from app.src.schemas.consumo_schema import ConsumoCreate, ConsumoUpdate
 from app.src.services.consumo_service import *
 from app.dependedecies import pegar_sessao, verificar_token
 
@@ -9,7 +9,7 @@ from app.src.models.usuario_model import Usuario
 router = APIRouter(prefix="/consumo", tags=["Consumo"])
 
 @router.post("/", tags=["Consumo"])
-def registrar_consumo_route(novo_consumo: Consumo, 
+def registrar_consumo_route(novo_consumo: ConsumoCreate, 
                             session: Session = Depends(pegar_sessao), 
                             current_user: Usuario = Depends(verificar_token)):
     return registrar_consumo(session, novo_consumo, current_user)

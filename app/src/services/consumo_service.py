@@ -4,10 +4,10 @@ from app.src.models.consumo_model import Consumos
 from app.src.schemas.consumo_schema import Consumo, ConsumoUpdate
 from app.src.models.usuario_model import Usuario
 
-def registrar_consumo(db: Session, novo_consumo: Consumo, current_user: Usuario):
-    if not current_user.admin:
-        novo_consumo.usuario_id = current_user.id
-        
+def registrar_consumo(db: Session, novo_consumo: ConsumoCreate, current_user: Usuario):
+    # O usuario_id é sempre definido automaticamente pelo ID do usuário autenticado
+    usuario_id = current_user.id
+    
     consumo_db = Consumos(
         tipo_consumo=novo_consumo.tipo_consumo,
         quantidade=novo_consumo.quantidade,
@@ -15,7 +15,7 @@ def registrar_consumo(db: Session, novo_consumo: Consumo, current_user: Usuario)
         preco=novo_consumo.preco,
         data=novo_consumo.data,
         simulacao=novo_consumo.simulacao,
-        usuario_id=novo_consumo.usuario_id,
+        usuario_id=usuario_id,
     )
     db.add(consumo_db)
     db.commit()

@@ -9,13 +9,13 @@ class ConsumoBase(BaseModel):
     preco: float
     data: date
     simulacao: bool = False
-    usuario_id: Optional[int] = None
-
-class Consumo(ConsumoBase):
-    id: Optional[int] = None
 
 class ConsumoCreate(ConsumoBase):
     pass
+
+class Consumo(ConsumoBase):
+    id: int
+    usuario_id: int
 
 class ConsumoUpdate(BaseModel):
     tipo_consumo: Optional[str] = None
@@ -24,4 +24,3 @@ class ConsumoUpdate(BaseModel):
     preco: Optional[float] = None
     data: Optional[date] = None
     simulacao: Optional[bool] = None
-    usuario_id: Optional[int] = None
