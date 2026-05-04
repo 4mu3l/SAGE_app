@@ -85,7 +85,12 @@ def login_tradicional(db: Session, email: str, senha: str):
         return {
             "status": "Sucesso",
             "mensagem": f"Login tradicional para {email} realizado com sucesso!",
-            "token_acesso": token
+            "token_acesso": token,
+            "usuario": {
+                "id": usuario.id,
+                "nome": usuario.nome,
+                "email": usuario.email
+            }
         }
     return {"status": "Erro", "mensagem": "E-mail ou senha incorretos!"}
 
