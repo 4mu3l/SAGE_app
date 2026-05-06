@@ -38,10 +38,7 @@ def chamar_ia_com_retry(prompt: str):
         contents=prompt,
         config=config_ia
     )
-# ==========================================
 # FUNÇÕES DE BANCO DE DADOS E FORMATAÇÃO
-# ==========================================
-
 def obter_historico_consumos(db: Session, usuario_id: int, dias: int = 30):
     data_limite = datetime.now() - timedelta(days=dias)
     return db.query(Consumos).filter(
@@ -75,9 +72,7 @@ def obter_ultimas_dicas(db: Session, usuario_id: int, limite: int = 5) -> list:
         for dica in dicas
     ]
 
-# ==========================================
-# SERVIÇOS DE GERAÇÃO DE DICAS (IA)
-# ==========================================
+# SERVIÇOS DE GERAÇÃO DE DICAS 
 
 def gerar_dica_genérica(db: Session, usuario_id: int, tipo_consumo: str = None) -> dict:
     try:
