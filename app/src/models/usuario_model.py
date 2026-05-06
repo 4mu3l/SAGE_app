@@ -9,7 +9,7 @@ class Usuario(Base):
     nome = Column("nome", String)
     email = Column("email", String, nullable=False)
     senha = Column("senha", String)
-    ativo = Column("ativo", Boolean)
+    ativo = Column("ativo", Boolean, default=True)
     admin = Column("admin", Boolean, default=False)
     codigo_recuperacao = Column("codigo_recuperacao", String, nullable=True)
     
