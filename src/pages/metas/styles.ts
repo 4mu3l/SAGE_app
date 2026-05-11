@@ -49,10 +49,37 @@ export const style = StyleSheet.create({
         color: '#FFFFFF',
         fontFamily: temas.fonts.bold,
     },
+    // Filtros por tipo
+    filtrosContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 20,
+    },
+    filtroButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        gap: 6,
+    },
+    filtroText: {
+        fontSize: 13,
+        fontFamily: temas.fonts.bold,
+        color: '#666666',
+    },
     // Cards de Metas
     cardsContainer: {
         gap: 15,
         marginBottom: 25,
+    },
+    // WRAPPER: container relativo que envolve card + botão remover
+    cardMetaWrapper: {
+        position: 'relative',
+        marginBottom: 5,
     },
     cardMeta: {
         backgroundColor: '#E8E8E8',
@@ -64,16 +91,40 @@ export const style = StyleSheet.create({
         shadowRadius: 3,
         elevation: 2,
     },
-    cardHeader: {
+    // Header do card com título e prazo alinhados
+    cardHeaderRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 12,
+    },
+    cardHeaderLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 8,
+        flex: 1,
     },
     cardTitulo: {
         fontSize: 16,
         color: '#333333',
         fontFamily: temas.fonts.bold,
+    },
+    // PRAZO NO CANTO SUPERIOR DIREITO
+    cardPrazoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#DDDDDD',
+    },
+    cardPrazoTexto: {
+        fontSize: 12,
+        color: '#666666',
+        fontFamily: temas.fonts.medium,
     },
     barraContainer: {
         width: '100%',
@@ -94,6 +145,50 @@ export const style = StyleSheet.create({
         fontSize: 14,
         color: '#666666',
         fontFamily: temas.fonts.medium,
+    },
+    cardPreco: {
+        fontSize: 14,
+        fontFamily: temas.fonts.bold,
+        marginTop: 4,
+    },
+    // BOTÃO REMOVER (FORA DO CARD)
+    botaoRemoverMeta: {
+        position: 'absolute',
+        bottom: 18,
+        right: 18,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 5,
+        zIndex: 10,
+    },
+    // Estados vazio
+    emptyState: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 60,
+        paddingHorizontal: 20,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        color: '#666666',
+        fontFamily: temas.fonts.bold,
+        marginTop: 16,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: '#999999',
+        fontFamily: temas.fonts.regular,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 20,
     },
     // Detalhes
     detalheContainer: {
@@ -185,20 +280,24 @@ export const style = StyleSheet.create({
         fontFamily: temas.fonts.medium,
         textAlign: 'center',
     },
+    precoTotalDetalhe: {
+        fontSize: 18,
+        fontFamily: temas.fonts.bold,
+        marginTop: 6,
+    },
+    // Modal
     modalOverlay: {
-    flex: 1,
+        flex: 1,
         backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-
     modalContent: {
         width: '85%',
         backgroundColor: '#FFFFFF',
         borderRadius: 24,
         padding: 24,
     },
-
     modalTitle: {
         fontSize: 22,
         fontFamily: temas.fonts.bold,
@@ -206,7 +305,6 @@ export const style = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 10,
     },
-
     modalTipo: {
         fontSize: 18,
         fontFamily: temas.fonts.medium,
@@ -214,7 +312,6 @@ export const style = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 18,
     },
-
     modalInput: {
         backgroundColor: '#F1F1F1',
         borderRadius: 16,
@@ -224,38 +321,24 @@ export const style = StyleSheet.create({
         fontFamily: temas.fonts.regular,
         marginBottom: 14,
     },
-
     modalButton: {
         backgroundColor: '#43A047',
         paddingVertical: 14,
         borderRadius: 18,
         alignItems: 'center',
     },
-
     modalButtonText: {
         color: '#FFFFFF',
         fontSize: 17,
         fontFamily: temas.fonts.bold,
     },
-
     modalCancel: {
         marginTop: 14,
         alignItems: 'center',
     },
-
     modalCancelText: {
         fontSize: 16,
         color: '#E53935',
         fontFamily: temas.fonts.medium,
     },
-    cardPreco: {
-        fontSize: 14,
-        fontFamily: temas.fonts.bold,
-        marginTop: 4,
-    },
-    precoTotalDetalhe: {
-        fontSize: 18,
-        fontFamily: temas.fonts.bold,
-        marginTop: 6,
-    },
-    });
+});

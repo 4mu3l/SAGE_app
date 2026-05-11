@@ -70,7 +70,6 @@ export default function Menu() {
             });
 
             setDica(dicaResponse);
-
             setConsumos(meusConsumos);
         } catch (error) {
             console.log('Erro ao carregar consumos no menu:', error);
@@ -90,17 +89,8 @@ export default function Menu() {
 
     function getEstatisticas(tipo: 'energia' | 'agua' | 'residuo') {
         const itens = consumos.filter(item => item.tipo_consumo === tipo);
-
-        const totalQuantidade = itens.reduce(
-            (sum, item) => sum + item.quantidade,
-            0
-        );
-
-        const totalPreco = itens.reduce(
-            (sum, item) => sum + (item.preco || 0),
-            0
-        );
-
+        const totalQuantidade = itens.reduce((sum, item) => sum + item.quantidade, 0);
+        const totalPreco = itens.reduce((sum, item) => sum + (item.preco || 0), 0);
         return { totalQuantidade, totalPreco };
     }
 
@@ -218,6 +208,7 @@ function HomeContent({ estatisticas, formatarReais, carregando, dica }: HomeCont
 
     return (
         <View>
+            {/* CARDS DE CONSUMO */}
             <View style={style.cardsContainer}>
                 {cards.map((card) => (
                     <TouchableOpacity
@@ -251,54 +242,41 @@ function HomeContent({ estatisticas, formatarReais, carregando, dica }: HomeCont
 
             <View style={style.divisório} />
 
-            <Text style={style.sectionTitle}>Progresso das metas</Text>
-
-            <View style={style.progressContainer}>
-                <View style={style.progressBar}>
-                    <View style={[style.progressFill, { width: '60%' }]} />
+            {/* BOTÃO METAS (AGORA EM CIMA) */}
+            <TouchableOpacity
+                style={style.menuCard}
+                onPress={() => navigation.navigate('Metas')}
+            >
+                <View style={style.menuCardLeft}>
+                    <View style={[style.menuIconBox, { backgroundColor: '#00ACC1' }]}>
+                        <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
+                    </View>
+                    <View>
+                        <Text style={style.menuCardTitle}>Metas</Text>
+                        <Text style={style.menuCardSubtitle}>Acompanhar progresso</Text>
+                    </View>
                 </View>
-            </View>
+                <Ionicons name="chevron-forward" size={22} color="#999999" />
+            </TouchableOpacity>
 
-            <View style={style.divisório} />
-
-            <View style={style.menuCardsContainer}>
-                <TouchableOpacity
-                    style={style.menuCard}
-                    onPress={() => navigation.navigate('Consumo')}
-                >
-                    <View style={style.menuCardLeft}>
-                        <View style={[style.menuIconBox, { backgroundColor: '#43A047' }]}>
-                            <Ionicons name="bar-chart-outline" size={24} color="#FFFFFF" />
-                        </View>
-
-                        <View>
-                            <Text style={style.menuCardTitle}>Consumo</Text>
-                            <Text style={style.menuCardSubtitle}>Histórico e gráficos</Text>
-                        </View>
+            {/* BOTÃO CONSUMO (AGORA EMBAIXO) */}
+            <TouchableOpacity
+                style={style.menuCard}
+                onPress={() => navigation.navigate('Consumo')}
+            >
+                <View style={style.menuCardLeft}>
+                    <View style={[style.menuIconBox, { backgroundColor: '#43A047' }]}>
+                        <Ionicons name="bar-chart-outline" size={24} color="#FFFFFF" />
                     </View>
-
-                    <Ionicons name="chevron-forward" size={22} color="#999999" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={style.menuCard}
-                    onPress={() => navigation.navigate('Metas')}
-                >
-                    <View style={style.menuCardLeft}>
-                        <View style={[style.menuIconBox, { backgroundColor: '#00ACC1' }]}>
-                            <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
-                        </View>
-
-                        <View>
-                            <Text style={style.menuCardTitle}>Metas</Text>
-                            <Text style={style.menuCardSubtitle}>Acompanhar progresso</Text>
-                        </View>
+                    <View>
+                        <Text style={style.menuCardTitle}>Consumo</Text>
+                        <Text style={style.menuCardSubtitle}>Histórico e gráficos</Text>
                     </View>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color="#999999" />
+            </TouchableOpacity>
 
-                    <Ionicons name="chevron-forward" size={22} color="#999999" />
-                </TouchableOpacity>
-            </View>
-
+            {/* CARD DE DICAS COM ESPAÇAMENTO */}
             <DicaCard dica={dica} carregando={carregando} />
         </View>
     );
@@ -347,7 +325,6 @@ function DicaCard({ dica, carregando }: { dica: DicaResponse | null; carregando:
     return (
         <View style={style.tipsCard}>
             <Ionicons name={icone as any} size={40} color="#FFFFFF" />
-            
             <View style={style.tipsContent}>
                 <View style={style.tipsHeader}>
                     <Text style={style.tipsTitle}>{dica.titulo || 'Dica Personalizada'}</Text>
@@ -357,9 +334,7 @@ function DicaCard({ dica, carregando }: { dica: DicaResponse | null; carregando:
                         </View>
                     )}
                 </View>
-                
                 <Text style={style.tipsText}>{dica.dica}</Text>
-                
                 {dica.analise && (
                     <View style={style.analiseContainer}>
                         <View style={style.analiseRow}>
@@ -380,7 +355,6 @@ function DicaCard({ dica, carregando }: { dica: DicaResponse | null; carregando:
                         </View>
                     </View>
                 )}
-                
                 <Text style={style.tipsDate}>
                     Atualizado em {new Date(dica.data).toLocaleDateString('pt-BR', {
                         day: '2-digit',
@@ -399,7 +373,6 @@ function NotificacoesContent() {
     return (
         <View style={style.sectionContainer}>
             <Text style={style.sectionTitle}>Notificações</Text>
-
             <View style={style.emptyState}>
                 <Ionicons name="notifications-off" size={48} color="#CCCCCC" />
                 <Text style={style.emptyText}>Nenhuma notificação no momento</Text>
@@ -412,17 +385,14 @@ function PreferenciasContent() {
     return (
         <View style={style.sectionContainer}>
             <Text style={style.sectionTitle}>Preferências</Text>
-
             <View style={style.preferenceItem}>
                 <Text style={style.preferenceText}>Notificações push</Text>
                 <View style={style.toggle} />
             </View>
-
             <View style={style.preferenceItem}>
                 <Text style={style.preferenceText}>Modo escuro</Text>
                 <View style={style.toggle} />
             </View>
-
             <View style={style.preferenceItem}>
                 <Text style={style.preferenceText}>Lembretes diários</Text>
                 <View style={style.toggle} />
@@ -435,7 +405,6 @@ function SobreContent() {
     return (
         <View style={style.sectionContainer}>
             <Text style={style.sectionTitle}>Sobre o App</Text>
-
             <View style={style.aboutCard}>
                 <Ionicons name="leaf" size={48} color="#2E7D32" />
                 <Text style={style.aboutTitle}>EcoConsumo</Text>

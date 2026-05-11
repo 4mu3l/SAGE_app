@@ -9,14 +9,14 @@ import { RootStackParamList } from '../../../App';
 import { useNavigation } from '@react-navigation/native';
 import { apiFetch } from '../../services/api';
 import { useUser } from '../../context/UserContext';
-import { useLoading } from '../../context/LoadingContext'; // ⬅️ IMPORTA
+import { useLoading } from '../../context/LoadingContext';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function Login() {
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const { setUsuario, setToken } = useUser();
-    const { mostrarLoading, esconderLoading } = useLoading(); // ⬅️ USA
+    const { mostrarLoading, esconderLoading } = useLoading();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,7 +34,7 @@ export default function Login() {
             return;
         }
 
-        mostrarLoading('Entrando...', 'screen'); // ⬅️ TELA CHEIA
+        mostrarLoading('Entrando...', 'screen');
 
         try {
             const data = await apiFetch('/usuarios/login', {

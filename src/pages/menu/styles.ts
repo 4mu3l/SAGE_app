@@ -52,16 +52,15 @@ export const style = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 20,
     },
-card: {
-    width: 100,
-    height: 100,
-    borderRadius: 15,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-},
-
+    card: {
+        width: 100,
+        height: 100,
+        borderRadius: 15,
+        paddingVertical: 6,
+        paddingHorizontal: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -73,27 +72,27 @@ card: {
         fontFamily: temas.fonts.regular,
         opacity: 0.8
     },
-cardValue: {
-    fontSize: 15,
-    color: '#FFFFFF',
-    fontFamily: temas.fonts.bold,
-    lineHeight: 18,
-    marginBottom: 1,
-},
-cardPrecoMenu: {
-    fontSize: 15,
-    color: '#FFFFFF',
-    fontFamily: temas.fonts.bold,
-    lineHeight: 13,
-    marginBottom: 2,
-},
-cardLabel: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontFamily: temas.fonts.regular,
-    opacity: 0.8,
-    marginTop: 3,
-},
+    cardValue: {
+        fontSize: 15,
+        color: '#FFFFFF',
+        fontFamily: temas.fonts.bold,
+        lineHeight: 18,
+        marginBottom: 1,
+    },
+    cardPrecoMenu: {
+        fontSize: 15,
+        color: '#FFFFFF',
+        fontFamily: temas.fonts.bold,
+        lineHeight: 13,
+        marginBottom: 2,
+    },
+    cardLabel: {
+        fontSize: 12,
+        color: '#FFFFFF',
+        fontFamily: temas.fonts.regular,
+        opacity: 0.8,
+        marginTop: 3,
+    },
     divisório: {
         width: '100%',
         height: 1,
@@ -132,7 +131,8 @@ cardLabel: {
         borderRadius: 20,
         padding: 20,
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        marginTop: 20,       // ← ESPAÇAMENTO ACIMA DO CARD DE DICAS
         marginBottom: 20,
     },
     tipsIcon: {
@@ -141,17 +141,61 @@ cardLabel: {
     tipsContent: {
         flex: 1,
     },
+    tipsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
     tipsTitle: {
         fontSize: 18,
         color: '#FFFFFF',
         fontFamily: temas.fonts.bold,
-        marginBottom: 8,
+        flex: 1,
     },
     tipsText: {
         fontSize: 14,
         color: '#FFFFFF',
         fontFamily: temas.fonts.regular,
         lineHeight: 20,
+    },
+    badgeAnalise: {
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+        marginLeft: 8,
+    },
+    badgeText: {
+        color: '#2E7D32',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    analiseContainer: {
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.3)',
+    },
+    analiseRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    analiseLabel: {
+        fontSize: 12,
+        color: 'rgba(255,255,255,0.8)',
+    },
+    analiseValue: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+    tipsDate: {
+        fontSize: 10,
+        color: 'rgba(255,255,255,0.7)',
+        marginTop: 10,
+        textAlign: 'right',
     },
     buttonConsumo: {
         width: '100%',
@@ -245,6 +289,7 @@ cardLabel: {
             width: 0,
             height: 3,
         },
+        marginBottom: 14,    // ← ESPAÇAMENTO ENTRE OS BOTÕES
     },
     menuCardLeft: {
         flexDirection: 'row',
@@ -267,48 +312,5 @@ cardLabel: {
         fontSize: 13,
         color: '#888888',
         marginTop: 3,
-    },
-        tipsHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-    },
-    badgeAnalise: {
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 12,
-    },
-    badgeText: {
-        color: '#2E7D32',
-        fontSize: 10,
-        fontWeight: 'bold',
-    },
-    analiseContainer: {
-        marginTop: 12,
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.3)',
-    },
-    analiseRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 4,
-    },
-    analiseLabel: {
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.8)',
-    },
-    analiseValue: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    tipsDate: {
-        fontSize: 10,
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 10,
-        textAlign: 'right',
     },
 });

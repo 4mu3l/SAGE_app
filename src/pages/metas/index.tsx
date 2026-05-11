@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal, TextInput, Alert, Platform } from 'react-native';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    ScrollView,
+    Modal,
+    TextInput,
+    Alert,
+    Platform,
+} from 'react-native';
 import { style } from "./styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from '@expo/vector-icons';
@@ -14,12 +23,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Metas'>;
 type TipoMeta = 'energia' | 'agua' | 'residuo';
 
-interface MetaData {
-    id?: number;
+interface MetaItem {
+    id: number;
     titulo: string;
-    atual: number;
-    meta: number | null;
+    tipo: TipoMeta;
+    tipo_consumo: string;
+    quantidade_alvo: number;
+    quantidade_atual: number;
     unidade: string;
+    prazo: string;
     cor: string;
     corBarra: string;
     icone: any;
@@ -35,43 +47,48 @@ export default function Metas() {
     const [valorMeta, setValorMeta] = useState('');
     const [prazo, setPrazo] = useState(new Date());
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
-    const [metas, setMetas] = useState<Record<TipoMeta, MetaData>>({
-        energia: {
-            titulo: 'Meta de Energia',
-            atual: 0,
-            meta: null,
-            unidade: 'kWh',
-            cor: '#C8B800',
-            corBarra: '#C8B800',
-            icone: 'flash',
-            precoTotal: 0,
-        },
-        agua: {
-            titulo: 'Meta de Água',
-            atual: 7500,
-            meta: null,
-            unidade: 'L',
-            cor: '#00BCD4',
-            corBarra: '#00BCD4',
-            icone: 'water',
-            precoTotal: 0,
-        },
-        residuo: {
-            titulo: 'Meta de Resíduos',
-            atual: 3.5,
-            meta: null,
-            unidade: 'kg',
-            cor: '#2E7D32',
-            corBarra: '#2E7D32',
-            icone: 'leaf',
-            precoTotal: 0,
-        },
-    });
+    const [metas, setMetas] = useState<MetaItem[]>([]);
+    const [metaSelecionada, setMetaSelecionada] = useState<MetaItem | null>(null);
 
-    const metaAtual = metas[tipoAtivo];
-    const progresso = metaAtual.meta
-        ? Math.min((metaAtual.atual / metaAtual.meta) * 100, 100)
-        : 0;
+    const getCorPorTipo = (tipo: string) => {
+        switch (tipo?.toLowerCase()) {
+            case 'energia': return '#C8B800';
+            case 'agua': return '#00BCD4';
+            case 'água': return '#00BCD4';
+            case 'residuo': return '#2E7D32';
+            default: return '#66BB6A';
+        }
+    };
+
+    const getIconePorTipo = (tipo: string) => {
+        switch (tipo?.toLowerCase()) {
+            case 'energia': return 'flash';
+            case 'agua': return 'water';
+            case 'água': return 'water';
+            case 'residuo': return 'leaf';
+            default: return 'flag';
+        }
+    };
+
+    const getUnidadePorTipo = (tipo: string) => {
+        switch (tipo?.toLowerCase()) {
+            case 'energia': return 'kWh';
+            case 'agua': return 'L';
+            case 'água': return 'L';
+            case 'residuo': return 'kg';
+            default: return 'un';
+        }
+    };
+
+    const getTituloPorTipo = (tipo: string) => {
+        switch (tipo?.toLowerCase()) {
+            case 'energia': return 'Meta de Energia';
+            case 'agua': return 'Meta de Água';
+            case 'água': return 'Meta de Água';
+            case 'residuo': return 'Meta de Resíduos';
+            default: return 'Meta';
+        }
+    };
 
     function formatarReais(valor: number) {
         return valor.toLocaleString('pt-BR', {
@@ -80,84 +97,112 @@ export default function Metas() {
         });
     }
 
-    async function buscarPrecoTotal(tipo: TipoMeta) {
+    function formatarData(data?: string) {
+        if (!data) return 'Sem prazo';
+        const [ano, mes, dia] = data.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    async function buscarPrecoTotal(tipo: string) {
         try {
-            const tipoApi = tipo === 'energia' ? 'energia' : tipo === 'agua' ? 'agua' : 'residuo';
             const response = await apiFetch('/consumo/', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
-            const lista = Array.isArray(response) ? response : response.dados;
+            const lista = Array.isArray(response) ? response : response.dados || [];
             const meusConsumos = lista.filter(
-                (item: any) => item.usuario_id === usuario?.id && item.tipo_consumo === tipoApi
+                (item: any) => item.usuario_id === usuario?.id && item.tipo_consumo === tipo
             );
-
-            const total = meusConsumos.reduce((sum: number, item: any) => sum + (item.preco || 0), 0);
-            return total;
+            return meusConsumos.reduce((sum: number, item: any) => sum + (item.preco || 0), 0);
         } catch (error) {
-            console.log(`Erro ao buscar preço ${tipo}:`, error);
             return 0;
         }
     }
 
-    async function carregarProgresso() {
+    async function carregarMetas() {
         mostrarLoading('Carregando metas...', 'screen');
 
-        async function buscarMeta(tipo: TipoMeta) {
-            try {
-                const resposta = await apiFetch(`/metas/progresso/${tipo}`, {
-                    headers: { Authorization: `Bearer ${token}` },
+        try {
+            // Busca lista de metas
+            const response = await apiFetch('/metas/', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const listaMetas = Array.isArray(response) ? response : response.dados || [];
+            console.log('Metas da API:', listaMetas);
+
+            // Busca progresso para cada tipo (só precisa uma vez por tipo)
+            const progressos: Record<string, { atual: number; meta: number }> = {};
+
+            for (const tipo of ['energia', 'agua', 'residuo']) {
+                try {
+                    const prog = await apiFetch(`/metas/progresso/${tipo}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    progressos[tipo] = {
+                        atual: prog.progresso?.quantidade_atual ?? 0,
+                        meta: prog.progresso?.limite_meta ?? 0,
+                    };
+                } catch (e) {
+                    progressos[tipo] = { atual: 0, meta: 0 };
+                }
+            }
+
+            // Busca preços
+            const precos: Record<string, number> = {};
+            for (const tipo of ['energia', 'agua', 'residuo']) {
+                precos[tipo] = await buscarPrecoTotal(tipo);
+            }
+
+            // Mapeia cada meta individualmente
+            const metasMapeadas: MetaItem[] = listaMetas
+                .filter((m: any) => m.usuario_id === usuario?.id)
+                .map((m: any) => {
+                    const tipoNormalizado = m.tipo_consumo?.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') || 'energia';
+                    const tipoBase = tipoNormalizado === 'agua' || tipoNormalizado === 'água' ? 'agua' : 
+                                     tipoNormalizado === 'residuo' ? 'residuo' : 'energia';
+
+                    return {
+                        id: m.id,
+                        titulo: getTituloPorTipo(tipoBase),
+                        tipo: tipoBase as TipoMeta,
+                        tipo_consumo: m.tipo_consumo,
+                        quantidade_alvo: m.quantidade_alvo || 0,
+                        quantidade_atual: progressos[tipoBase]?.atual || 0,
+                        unidade: getUnidadePorTipo(tipoBase),
+                        prazo: m.prazo,
+                        cor: getCorPorTipo(tipoBase),
+                        corBarra: getCorPorTipo(tipoBase),
+                        icone: getIconePorTipo(tipoBase),
+                        precoTotal: precos[tipoBase] || 0,
+                    };
                 });
 
-                console.log(`META ${tipo}:`, resposta);
+            console.log('Metas mapeadas:', metasMapeadas);
+            setMetas(metasMapeadas);
 
-                return {
-                    atual: resposta.progresso.quantidade_atual,
-                    meta: resposta.progresso.limite_meta,
-                };
-            } catch (error) {
-                console.log(`Erro ao carregar ${tipo}:`, error);
-                return { atual: 0, meta: null };
-            }
+            // Seleciona a primeira meta do tipo ativo (ou a primeira geral)
+            const metaDoTipo = metasMapeadas.find(m => m.tipo === tipoAtivo);
+            setMetaSelecionada(metaDoTipo || metasMapeadas[0] || null);
+
+        } catch (error) {
+            console.log('Erro ao carregar metas:', error);
+            Alert.alert('Erro', 'Não foi possível carregar as metas.');
+        } finally {
+            esconderLoading();
         }
-
-        const energia = await buscarMeta('energia');
-        const agua = await buscarMeta('agua');
-        const residuo = await buscarMeta('residuo');
-
-        const precoEnergia = await buscarPrecoTotal('energia');
-        const precoAgua = await buscarPrecoTotal('agua');
-        const precoResiduo = await buscarPrecoTotal('residuo');
-
-        setMetas((prev) => ({
-            energia: {
-                ...prev.energia,
-                atual: energia.atual,
-                meta: energia.meta,
-                precoTotal: precoEnergia,
-            },
-            agua: {
-                ...prev.agua,
-                atual: agua.atual,
-                meta: agua.meta,
-                precoTotal: precoAgua,
-            },
-            residuo: {
-                ...prev.residuo,
-                atual: residuo.atual,
-                meta: residuo.meta,
-                precoTotal: precoResiduo,
-            },
-        }));
-
-        esconderLoading();
     }
 
     useEffect(() => {
         if (usuario?.id && token) {
-            carregarProgresso();
+            carregarMetas();
         }
     }, [usuario, token]);
+
+    // Quando troca o tipo ativo, seleciona a primeira meta desse tipo
+    useEffect(() => {
+        const metaDoTipo = metas.find(m => m.tipo === tipoAtivo);
+        setMetaSelecionada(metaDoTipo || null);
+    }, [tipoAtivo, metas]);
 
     async function salvarMeta() {
         if (!valorMeta.trim()) {
@@ -166,7 +211,6 @@ export default function Metas() {
         }
 
         mostrarLoading('Salvando meta...', 'overlay');
-
         const tipoApi = tipoAtivo === 'energia' ? 'energia' : tipoAtivo === 'agua' ? 'agua' : 'residuo';
         const unidade = tipoAtivo === 'energia' ? 'kWh' : tipoAtivo === 'agua' ? 'L' : 'kg';
 
@@ -185,15 +229,59 @@ export default function Metas() {
             setValorMeta('');
             setModalVisible(false);
             setTimeout(() => {
-                carregarProgresso();
+                carregarMetas();
             }, 500);
         } catch (error: any) {
-            console.log(error);
             Alert.alert('Erro', error?.message || 'Erro ao salvar meta');
         } finally {
             esconderLoading();
         }
     }
+
+    async function removerMeta(meta: MetaItem) {
+        if (!meta.id) {
+            Alert.alert('Erro', 'ID da meta não encontrado.');
+            return;
+        }
+
+        Alert.alert(
+            'Remover meta',
+            `Deseja remover ${meta.titulo}?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Remover',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            mostrarLoading('Removendo meta...', 'overlay');
+
+                            await apiFetch(`/metas/${meta.id}`, {
+                                method: 'DELETE',
+                                headers: { Authorization: `Bearer ${token}` },
+                            });
+
+                            Alert.alert('Sucesso', 'Meta removida!');
+                            carregarMetas();
+                        } catch (error: any) {
+                            Alert.alert('Erro', error?.message || 'Erro ao remover meta');
+                        } finally {
+                            esconderLoading();
+                        }
+                    },
+                },
+            ]
+        );
+    }
+
+    // Calcula progresso
+    function calcularProgresso(atual: number, meta: number) {
+        if (meta <= 0) return 0;
+        return Math.min((atual / meta) * 100, 100);
+    }
+
+    // Agrupa metas por tipo para os botões de filtro
+    const tiposDisponiveis = Array.from(new Set(metas.map(m => m.tipo)));
 
     return (
         <View style={style.container}>
@@ -211,122 +299,207 @@ export default function Metas() {
                 </TouchableOpacity>
                 <Text style={style.título}>Minhas Metas</Text>
             </LinearGradient>
+
             <ScrollView style={style.content} showsVerticalScrollIndicator={false}>
+                {/* BOTÃO DEFINIR NOVA META */}
                 <TouchableOpacity
                     style={style.botaoNovaMeta}
                     onPress={() => setModalVisible(true)}
                 >
                     <Text style={style.botaoNovaMetaText}>Definir Nova Meta</Text>
                 </TouchableOpacity>
-                <View style={style.cardsContainer}>
-                    {(Object.keys(metas) as TipoMeta[]).map((tipo) => {
-                        const meta = metas[tipo];
-                        if (meta.meta === null) return null;
 
-                        const prog = Math.min((meta.atual / meta.meta) * 100, 100);
-                        return (
-                            <TouchableOpacity
-                                key={tipo}
-                                style={[
-                                    style.cardMeta,
-                                    tipoAtivo === tipo && { borderWidth: 2, borderColor: meta.cor }
-                                ]}
-                                onPress={() => setTipoAtivo(tipo)}
-                            >
-                                <View style={style.cardHeader}>
-                                    <Ionicons name={meta.icone} size={20} color={meta.cor} />
-                                    <Text style={style.cardTitulo}>{meta.titulo}</Text>
-                                </View>
-                                <View style={style.barraContainer}>
-                                    <View style={style.barraFundo}>
-                                        <View
-                                            style={[
-                                                style.barraPreenchimento,
-                                                {
-                                                    width: `${prog}%`,
-                                                    backgroundColor: meta.corBarra
-                                                }
-                                            ]}
-                                        />
-                                    </View>
-                                </View>
-                                <Text style={style.cardValor}>
-                                    {meta.atual.toLocaleString('pt-BR')} {meta.unidade} / {meta.meta.toLocaleString('pt-BR')} {meta.unidade}
-                                </Text>
-                                <Text style={[style.cardPreco, { color: meta.cor }]}>
-                                    {formatarReais(meta.precoTotal)}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
+                {/* FILTROS POR TIPO (só aparece se tiver metas) */}
+                {metas.length > 0 && (
+                    <View style={style.filtrosContainer}>
+                        {(['energia', 'agua', 'residuo'] as TipoMeta[]).map((tipo) => {
+                            const temMeta = metas.some(m => m.tipo === tipo);
+                            if (!temMeta) return null;
 
-                <View style={style.detalheContainer}>
-                    <Text style={style.detalheTitulo}>Detalhes</Text>
-
-                    <View style={style.detalheCard}>
-                        <View style={style.detalheHeader}>
-                            <Ionicons name={metaAtual.icone} size={28} color={metaAtual.cor} />
-                            <Text style={style.detalheNome}>{metaAtual.titulo}</Text>
-                        </View>
-                        <View style={style.progressoCircularContainer}>
-                            <View style={style.progressoInfo}>
-                                <Text style={[style.progressoPercentual, { color: metaAtual.cor }]}>
-                                    {Math.round(progresso)}%
-                                </Text>
-                                <Text style={style.progressoLabel}>atingido</Text>
-                                <Text style={[style.precoTotalDetalhe, { color: metaAtual.cor }]}>
-                                    {formatarReais(metaAtual.precoTotal)}
-                                </Text>
-                            </View>
-                        </View>
-                        <View style={style.detalheValores}>
-                            <View style={style.valorBox}>
-                                <Text style={style.valorLabel}>Atual</Text>
-                                <Text style={[style.valorNumero, { color: metaAtual.cor }]}>
-                                    {metaAtual.atual.toLocaleString('pt-BR')}
-                                </Text>
-                                <Text style={style.valorUnidade}>{metaAtual.unidade}</Text>
-                            </View>
-                            <Ionicons name="arrow-forward" size={24} color="#CCCCCC" />
-                            <View style={style.valorBox}>
-                                <Text style={style.valorLabel}>Meta</Text>
-                                <Text style={[style.valorNumero, { color: metaAtual.cor }]}>
-                                    {metaAtual.meta?.toLocaleString('pt-BR')}
-                                </Text>
-                                <Text style={style.valorUnidade}>{metaAtual.unidade}</Text>
-                            </View>
-                        </View>
-                        <View style={style.barraDetalheContainer}>
-                            <View style={style.barraDetalheFundo}>
-                                <View
+                            const cor = getCorPorTipo(tipo);
+                            return (
+                                <TouchableOpacity
+                                    key={tipo}
                                     style={[
-                                        style.barraDetalhePreenchimento,
-                                        {
-                                            width: `${progresso}%`,
-                                            backgroundColor: metaAtual.corBarra
+                                        style.filtroButton,
+                                        tipoAtivo === tipo && { 
+                                            backgroundColor: cor,
+                                            borderColor: cor,
                                         }
                                     ]}
-                                />
-                            </View>
-                        </View>
-                        {metaAtual.meta !== null && (
-                            <Text style={style.detalheStatus}>
-                                {progresso >= 100
-                                    ? '✅ Meta atingida!'
-                                    : `Faltam ${(metaAtual.meta - metaAtual.atual).toLocaleString('pt-BR')} ${metaAtual.unidade} para atingir a meta`}
-                            </Text>
-                        )}
+                                    onPress={() => setTipoAtivo(tipo)}
+                                >
+                                    <Ionicons
+                                        name={getIconePorTipo(tipo) as any}
+                                        size={16}
+                                        color={tipoAtivo === tipo ? '#FFFFFF' : cor}
+                                    />
+                                    <Text style={[
+                                        style.filtroText,
+                                        tipoAtivo === tipo && { color: '#FFFFFF' }
+                                    ]}>
+                                        {tipo === 'energia' ? 'Energia' : tipo === 'agua' ? 'Água' : 'Resíduos'}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
-                </View>
+                )}
+
+                {/* LISTA DE METAS DO TIPO ATIVO */}
+                {metas.length === 0 ? (
+                    <View style={style.emptyState}>
+                        <Ionicons name="flag-outline" size={64} color="#E0E0E0" />
+                        <Text style={style.emptyTitle}>Nenhuma meta definida</Text>
+                        <Text style={style.emptyText}>
+                            Crie sua primeira meta para começar a acompanhar seu progresso.
+                        </Text>
+                    </View>
+                ) : (
+                    <View style={style.cardsContainer}>
+                        {metas
+                            .filter(m => m.tipo === tipoAtivo)
+                            .map((meta) => {
+                                const prog = calcularProgresso(meta.quantidade_atual, meta.quantidade_alvo);
+
+                                return (
+                                    <View key={meta.id} style={style.cardMetaWrapper}>
+                                        {/* CARD PRINCIPAL */}
+                                        <TouchableOpacity
+                                            style={[
+                                                style.cardMeta,
+                                                metaSelecionada?.id === meta.id && { 
+                                                    borderWidth: 2, 
+                                                    borderColor: meta.cor 
+                                                }
+                                            ]}
+                                            onPress={() => setMetaSelecionada(meta)}
+                                            activeOpacity={0.9}
+                                        >
+                                            {/* HEADER: TÍTULO + PRAZO */}
+                                            <View style={style.cardHeaderRow}>
+                                                <View style={style.cardHeaderLeft}>
+                                                    <Ionicons name={meta.icone} size={20} color={meta.cor} />
+                                                    <Text style={style.cardTitulo}>{meta.titulo}</Text>
+                                                </View>
+                                                <View style={style.cardPrazoContainer}>
+                                                    <Ionicons name="calendar-outline" size={12} color="#888888" />
+                                                    <Text style={style.cardPrazoTexto}>
+                                                        {formatarData(meta.prazo)}
+                                                    </Text>
+                                                </View>
+                                            </View>
+
+                                            {/* BARRA DE PROGRESSO */}
+                                            <View style={style.barraContainer}>
+                                                <View style={style.barraFundo}>
+                                                    <View
+                                                        style={[
+                                                            style.barraPreenchimento,
+                                                            {
+                                                                width: `${prog}%`,
+                                                                backgroundColor: meta.corBarra
+                                                            }
+                                                        ]}
+                                                    />
+                                                </View>
+                                            </View>
+
+                                            {/* VALORES */}
+                                            <Text style={style.cardValor}>
+                                                {meta.quantidade_atual.toLocaleString('pt-BR')} {meta.unidade} / {meta.quantidade_alvo.toLocaleString('pt-BR')} {meta.unidade}
+                                            </Text>
+                                            <Text style={[style.cardPreco, { color: meta.cor }]}>
+                                                {formatarReais(meta.precoTotal)}
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        {/* BOTÃO REMOVER */}
+                                        <TouchableOpacity
+                                            style={style.botaoRemoverMeta}
+                                            onPress={(e) => {
+                                                e.stopPropagation();
+                                                removerMeta(meta);
+                                            }}
+                                            activeOpacity={0.7}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        >
+                                            <Ionicons name="trash-outline" size={18} color="#E53935" />
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })}
+                    </View>
+                )}
+
+                {/* DETALHES DA META SELECIONADA */}
+                {metaSelecionada && (
+                    <View style={style.detalheContainer}>
+                        <Text style={style.detalheTitulo}>Detalhes</Text>
+                        <View style={style.detalheCard}>
+                            <View style={style.detalheHeader}>
+                                <Ionicons name={metaSelecionada.icone} size={28} color={metaSelecionada.cor} />
+                                <Text style={style.detalheNome}>{metaSelecionada.titulo}</Text>
+                            </View>
+                            <View style={style.progressoCircularContainer}>
+                                <View style={style.progressoInfo}>
+                                    <Text style={[style.progressoPercentual, { color: metaSelecionada.cor }]}>
+                                        {Math.round(calcularProgresso(metaSelecionada.quantidade_atual, metaSelecionada.quantidade_alvo))}%
+                                    </Text>
+                                    <Text style={style.progressoLabel}>atingido</Text>
+                                    <Text style={[style.precoTotalDetalhe, { color: metaSelecionada.cor }]}>
+                                        {formatarReais(metaSelecionada.precoTotal)}
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={style.detalheValores}>
+                                <View style={style.valorBox}>
+                                    <Text style={style.valorLabel}>Atual</Text>
+                                    <Text style={[style.valorNumero, { color: metaSelecionada.cor }]}>
+                                        {metaSelecionada.quantidade_atual.toLocaleString('pt-BR')}
+                                    </Text>
+                                    <Text style={style.valorUnidade}>{metaSelecionada.unidade}</Text>
+                                </View>
+                                <Ionicons name="arrow-forward" size={24} color="#CCCCCC" />
+                                <View style={style.valorBox}>
+                                    <Text style={style.valorLabel}>Meta</Text>
+                                    <Text style={[style.valorNumero, { color: metaSelecionada.cor }]}>
+                                        {metaSelecionada.quantidade_alvo.toLocaleString('pt-BR')}
+                                    </Text>
+                                    <Text style={style.valorUnidade}>{metaSelecionada.unidade}</Text>
+                                </View>
+                            </View>
+                            <View style={style.barraDetalheContainer}>
+                                <View style={style.barraDetalheFundo}>
+                                    <View
+                                        style={[
+                                            style.barraDetalhePreenchimento,
+                                            {
+                                                width: `${calcularProgresso(metaSelecionada.quantidade_atual, metaSelecionada.quantidade_alvo)}%`,
+                                                backgroundColor: metaSelecionada.corBarra
+                                            }
+                                        ]}
+                                    />
+                                </View>
+                            </View>
+                            <Text style={style.detalheStatus}>
+                                {calcularProgresso(metaSelecionada.quantidade_atual, metaSelecionada.quantidade_alvo) >= 100
+                                    ? '✅ Meta atingida!'
+                                    : `Faltam ${(metaSelecionada.quantidade_alvo - metaSelecionada.quantidade_atual).toLocaleString('pt-BR')} ${metaSelecionada.unidade} para atingir a meta`}
+                            </Text>
+                        </View>
+                    </View>
+                )}
                 <View style={{ height: 30 }} />
             </ScrollView>
+
+            {/* MODAL */}
             <Modal visible={modalVisible} transparent animationType="fade">
                 <View style={style.modalOverlay}>
                     <View style={style.modalContent}>
                         <Text style={style.modalTitle}>Definir Nova Meta</Text>
                         <Text style={style.modalTipo}>
-                            {metaAtual.titulo}
+                            {tipoAtivo === 'energia' ? 'Meta de Energia' : tipoAtivo === 'agua' ? 'Meta de Água' : 'Meta de Resíduos'}
                         </Text>
                         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
                             {(['energia', 'agua', 'residuo'] as TipoMeta[]).map((tipo) => (
@@ -337,7 +510,7 @@ export default function Metas() {
                                         flex: 1,
                                         paddingVertical: 10,
                                         borderRadius: 16,
-                                        backgroundColor: tipoAtivo === tipo ? metas[tipo].cor : '#EEEEEE',
+                                        backgroundColor: tipoAtivo === tipo ? getCorPorTipo(tipo) : '#EEEEEE',
                                         alignItems: 'center',
                                     }}
                                 >
@@ -349,7 +522,7 @@ export default function Metas() {
                         </View>
                         <TextInput
                             style={style.modalInput}
-                            placeholder={`Valor da meta em ${metaAtual.unidade}`}
+                            placeholder={`Valor da meta em ${getUnidadePorTipo(tipoAtivo)}`}
                             keyboardType="numeric"
                             value={valorMeta}
                             onChangeText={setValorMeta}
@@ -358,11 +531,8 @@ export default function Metas() {
                             style={style.modalInput}
                             onPress={() => setMostrarDatePicker(true)}
                         >
-                            <Text>
-                                Prazo: {prazo.toISOString().split('T')[0]}
-                            </Text>
+                            <Text>Prazo: {prazo.toISOString().split('T')[0]}</Text>
                         </TouchableOpacity>
-
                         {mostrarDatePicker && (
                             <DateTimePicker
                                 value={prazo}
@@ -370,10 +540,7 @@ export default function Metas() {
                                 display="default"
                                 onChange={(event, selectedDate) => {
                                     setMostrarDatePicker(Platform.OS === 'ios');
-
-                                    if (selectedDate) {
-                                        setPrazo(selectedDate);
-                                    }
+                                    if (selectedDate) setPrazo(selectedDate);
                                 }}
                             />
                         )}
